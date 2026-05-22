@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.LowPriority
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,10 +39,19 @@ fun TaskDetailScreen(
     navController: NavController,
     taskId: Int?,
     viewModel: TaskViewModel = viewModel()
-) {
+)
+{
     LaunchedEffect(taskId) {
-        viewModel.loadTask(taskId)
+        if (taskId != null && taskId != -1) {
+            viewModel.loadTask(taskId)
+        } else {
+            viewModel.onIdChange("")
+            viewModel.onTitleChange("")
+            viewModel.onDescriptionChange("")
+            viewModel.onPriorityChange("1")
+        }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,22 +71,17 @@ fun TaskDetailScreen(
                     .padding(20.dp)
             ) {
                 Text(
-                    text = "Información de la Tarea",
+                    text = if (taskId == -1) "Nueva Tarea" else "Editar Tarea",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(
-                    modifier = Modifier.height(20.dp)
-                )
+                Spacer(modifier = Modifier.height(20.dp))
+
                 OutlinedTextField(
                     value = viewModel.id,
-                    onValueChange = {
-                        viewModel.onIdChange(it)
-                    },
+                    onValueChange = { viewModel.onIdChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text("ID")
-                    },
+                    label = { Text("ID") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Tag,
@@ -86,18 +90,28 @@ fun TaskDetailScreen(
                     },
                     singleLine = true
                 )
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = viewModel.title,
-                    onValueChange = {
-                        viewModel.onTitleChange(it)
-                    },
+                    onValueChange = { viewModel.onTitleChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text("Título")
+                    label = { Text("Título") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null
+                        )
                     },
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = viewModel.description,
+                    onValueChange = { viewModel.onDescriptionChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Descripción") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Edit,
@@ -105,38 +119,47 @@ fun TaskDetailScreen(
                         )
                     }
                 )
-                Spacer(
-                    modifier = Modifier.height(20.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = viewModel.priority,
+                    onValueChange = { viewModel.onPriorityChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Prioridad (1, 2 o 3)") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.LowPriority,
+                            contentDescription = null
+                        )
+                    },
+                    singleLine = true
                 )
+                Spacer(modifier = Modifier.height(20.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement =
-                        Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         modifier = Modifier.weight(1f),
-                        onClick = {
-                            navController.popBackStack()
-                        }
+                        onClick = { navController.popBackStack() }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = null
                         )
-
-                        Spacer(
-                            modifier = Modifier.width(8.dp)
-                        )
-
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text("Cancelar")
                     }
                     Button(
-                       modifier = Modifier.weight(1f),
-                       onClick = {
+                        modifier = Modifier.weight(1f),
+                        onClick = {
                             viewModel.addTask(
                                 Task(
                                     id = viewModel.id.toInt(),
                                     title = viewModel.title,
+                                    description = viewModel.description,
+                                    priority = viewModel.priority.toInt(),
                                     completed = viewModel.completed
                                 )
                             )
@@ -147,9 +170,7 @@ fun TaskDetailScreen(
                             imageVector = Icons.Default.Save,
                             contentDescription = null
                         )
-                        Spacer(
-                            modifier = Modifier.width(8.dp)
-                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text("Guardar")
                     }
                 }
