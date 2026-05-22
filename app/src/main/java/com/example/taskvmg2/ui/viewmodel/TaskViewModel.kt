@@ -6,13 +6,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.taskvmg2.ui.model.Task
 import com.example.taskvmg2.ui.repository.TaskRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class TaskViewModel : ViewModel() {
 
     private val repository = TaskRepository()
 
-    var tasks by mutableStateOf(repository.getTasks())
-        private set
+    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
     var id by mutableStateOf("")
         private set
@@ -28,6 +31,10 @@ class TaskViewModel : ViewModel() {
 
     var completed by mutableStateOf(false)
         private set
+
+    init {
+        _tasks.value = repository.getTasks().toList()
+    }
 
     fun onIdChange(value: String) { id = value }
 
@@ -50,16 +57,18 @@ class TaskViewModel : ViewModel() {
 
     fun addTask(task: Task) {
         repository.addTask(task)
-        tasks = repository.getTasks().toList()
+        _tasks.value = repository.getTasks().toList()
     }
 
     fun removeTask(task: Task) {
         repository.removeTask(task)
-        tasks = repository.getTasks().toList()
+        _tasks.value = _tasks.value.filter { it.id != task.id }
     }
 
     fun toggleTask(task: Task) {
         repository.toggleTask(task)
-        tasks = repository.getTasks().toList()
+        _tasks.value = _tasks.value.map {
+            if (it.id == task.id) it.copy(completed = !it.completed) else it
+        }
     }
 }

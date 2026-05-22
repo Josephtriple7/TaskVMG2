@@ -20,7 +20,7 @@ class TaskRepository {
     fun removeTask(task: Task) = tasks.remove(task)
 
     fun toggleTask(task: Task) {
-        val index = tasks.indexOf(task)
+        val index = tasks.indexOfFirst { it.id == task.id }
         if (index != -1) {
             tasks[index] = task.copy(completed = !task.completed)
         }
