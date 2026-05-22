@@ -71,8 +71,12 @@ fun TaskListScreen(navController: NavController,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                 }
-                items(viewModel.tasks.size)
+                items(
+                    count = viewModel.tasks.size,
+                    key = { viewModel.tasks[it].id }
+                )
                 {
+                    val task = viewModel.tasks[it]
                     Card(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -90,26 +94,24 @@ fun TaskListScreen(navController: NavController,
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text(
-                                    text = viewModel.tasks[it].title,
+                                    text = task.title,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = viewModel.tasks[it].description,
+                                    text = task.description,
                                     style = MaterialTheme.typography.bodySmall
                                 )
                                 Text(
-                                    text = "Prioridad: ${viewModel.tasks[it].priority}",
+                                    text = "Prioridad: ${task.priority}",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
                             Checkbox(
-                                checked = viewModel.tasks[it].completed,
-                                onCheckedChange = {
-                                        _ -> viewModel.toggleTask(viewModel.tasks[it])
-                                }
+                                checked = task.completed,
+                                onCheckedChange = { viewModel.toggleTask(task) }
                             )
                             IconButton(onClick = {
-                                viewModel.removeTask(viewModel.tasks[it])
+                                viewModel.removeTask(task)
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
@@ -119,6 +121,7 @@ fun TaskListScreen(navController: NavController,
                         }
                     }
                 }
+
             }
         }
     }
